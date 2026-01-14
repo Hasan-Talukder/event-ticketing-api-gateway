@@ -2,12 +2,18 @@ import { Transport } from '@nestjs/microservices';
 
 export const AUTH_CLIENT = 'AUTH_CLIENT';
 
-// Use 'as const' to make TypeScript infer Transport.RMQ as a literal [web:55]
+// Make it always a string (fallback or throw) [web:55]
+const RABBITMQ_URL = process.env.RABBITMQ_URL;
+
+if (!RABBITMQ_URL) {
+  throw new Error('RABBITMQ_URL is missing in environment variables');
+}
+
 export const authClientConfig = {
   name: AUTH_CLIENT,
   transport: Transport.RMQ as const,
   options: {
-    urls: [process.env.RABBITMQ_URL || 'amqp://admin:admin@localhost:5672'],
+    urls: [RABBITMQ_URL], // now it's string[]
     queue: 'auth_queue',
     queueOptions: { durable: true },
   },

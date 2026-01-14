@@ -1,18 +1,19 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import * as Joi from 'joi';
+import { AuthModule } from './modules/auth/auth.module';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+      validationSchema: Joi.object({
+        PORT: Joi.number().port().required(),
+        RABBITMQ_URL: Joi.string().required(),
+      }),
     }),
-  );
-
-  await app.listen(process.env.PORT ?? 3001);
-}
-bootstrap();
+    AuthModule,
+  ],
+})
+export class AppModule {}
