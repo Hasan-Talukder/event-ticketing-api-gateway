@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ClientsModule } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
+import { authClientConfig } from './config/rmq.clients';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    ClientsModule.register([authClientConfig]),
+    AuthModule,
+  ],
 })
 export class AppModule {}
