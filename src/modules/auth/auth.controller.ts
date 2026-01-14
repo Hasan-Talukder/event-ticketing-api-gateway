@@ -8,17 +8,17 @@ export class AuthController {
   constructor(@Inject(AUTH_CLIENT) private readonly authClient: ClientProxy) {}
 
   @Post('register')
-  async register(@Body() dto: any) {
-    return firstValueFrom(this.authClient.send({ cmd: 'auth_register' }, dto));
+  register(@Body() dto: any) {
+    return firstValueFrom(this.authClient.send({ cmd: 'auth.register' }, dto));
   }
 
   @Post('login')
-  async login(@Body() dto: any) {
+  login(@Body() dto: any) {
     return firstValueFrom(this.authClient.send({ cmd: 'auth.login' }, dto));
   }
 
   @Post('validate_token')
-  async validateToken(@Body() body: { token: string }) {
+  validateToken(@Body() body: { token: string }) {
     return firstValueFrom(
       this.authClient.send({ cmd: 'auth.validate_token' }, body.token),
     );
