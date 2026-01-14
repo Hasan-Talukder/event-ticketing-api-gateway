@@ -1,21 +1,26 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config'; // <--- Import these
 import { AuthController } from './auth.controller';
 import { AUTH_CLIENT } from '../../config/rmq.clients';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ClientsModule.registerAsync([
+      // <--- Changed from register() to registerAsync()
       {
         name: AUTH_CLIENT,
-        transport: Transport.RMQ as const,
-        options: {
-          urls: [
-            process.env.RABBITMQ_URL || 'amqp://admin:admin@localhost:5672',
-          ],
-          queue: 'auth_queue',
-          queueOptions: { durable: true },
-        },
+        imports: [ConfigModule], // <--- Import ConfigModule context
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            // Now we use configService to get the variable safely
+            urls: [configService.getOrThrow<string>('RABBITMQ_URL')],
+            queue: 'auth_queue',
+            queueOptions: { durable: true },
+          },
+        }),
+        inject: [ConfigService], // <--- Inject the service
       },
     ]),
   ],

@@ -1,4 +1,5 @@
 import { Transport } from '@nestjs/microservices';
+import 'dotenv/config';
 
 export const AUTH_CLIENT = 'AUTH_CLIENT';
 
