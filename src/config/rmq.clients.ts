@@ -1,21 +1,22 @@
-import { Transport } from '@nestjs/microservices';
-import 'dotenv/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RMQ_QUEUE, RMQ_SERVICE } from '@event-ticketing/shared';
 
-export const AUTH_CLIENT = 'AUTH_CLIENT';
+// (optional) backward-compat for old imports
+export const AUTH_CLIENT = RMQ_SERVICE.AUTH;
 
-// Make it always a string (fallback or throw) [web:55]
-const RABBITMQ_URL = process.env.RABBITMQ_URL;
-
-if (!RABBITMQ_URL) {
-  throw new Error('RABBITMQ_URL is missing in environment variables');
-}
-
-export const authClientConfig = {
-  name: AUTH_CLIENT,
-  transport: Transport.RMQ as const,
-  options: {
-    urls: [RABBITMQ_URL], // now it's string[]
-    queue: 'auth_queue',
-    queueOptions: { durable: true },
+export const RmqClientsModule = ClientsModule.registerAsync([
+  {
+    name: RMQ_SERVICE.AUTH,
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (config: ConfigService) => ({
+      transport: Transport.RMQ,
+      options: {
+        urls: [config.getOrThrow<string>('RABBITMQ_URL')],
+        queue: RMQ_QUEUE.AUTH,
+        queueOptions: { durable: true },
+      },
+    }),
   },
-};
+]);
